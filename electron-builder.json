@@ -1,0 +1,23 @@
+{
+  "appId": "com.hr-taskdashboard.app",
+  "productName": "HR TaskDashboard",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*"
+  ],
+  "win": {
+    "target": ["portable"],
+    "signAndEditExecutable": false
+  },
+  "mac": {
+    "target": ["dmg"],
+    "icon": "public/icon.icns"
+  },
+  "linux": {
+    "target": ["AppImage"],
+    "icon": "public/icon.png"
+  }
+}
