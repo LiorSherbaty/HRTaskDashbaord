@@ -15,6 +15,7 @@ export async function seedDatabase() {
     id: proj1Id,
     title: 'Onboarding Team',
     description: 'Managing the onboarding process for new employees',
+    tags: ['hr', 'onboarding'],
     createdAt: daysAgo(90),
     isArchived: false,
   });
@@ -25,6 +26,7 @@ export async function seedDatabase() {
     projectId: proj1Id,
     title: 'Keeping the onboarding manual updated',
     description: 'Ensure all onboarding documentation is current',
+    tags: ['documentation'],
     createdAt: daysAgo(90),
     isArchived: false,
   });
@@ -34,6 +36,7 @@ export async function seedDatabase() {
     userStoryId: story1Id,
     title: 'Update benefits section with Finance team',
     description: 'Coordinate with Finance to update health insurance info',
+    tags: ['benefits', 'urgent'],
     status: TaskStatus.Blocked,
     createdAt: daysAgo(14),
     startDate: daysAgo(12),
@@ -66,6 +69,7 @@ export async function seedDatabase() {
     userStoryId: story1Id,
     title: 'Review IT section',
     description: 'Check that IT onboarding steps are accurate',
+    tags: ['it', 'review'],
     status: TaskStatus.Active,
     createdAt: daysAgo(10),
     startDate: daysAgo(8),
@@ -86,6 +90,7 @@ export async function seedDatabase() {
     id: proj2Id,
     title: 'Mentoring',
     description: 'Mentoring program for HR team members',
+    tags: ['mentoring', 'development'],
     createdAt: daysAgo(60),
     isArchived: false,
   });
@@ -96,6 +101,7 @@ export async function seedDatabase() {
     projectId: proj2Id,
     title: 'Mentoring HR Specialist',
     description: 'Weekly mentoring sessions with junior HR staff',
+    tags: ['weekly'],
     createdAt: daysAgo(60),
     isArchived: false,
   });
@@ -105,6 +111,7 @@ export async function seedDatabase() {
     userStoryId: story2Id,
     title: 'Mentor Ortal - Q4 Goals',
     description: 'Help Ortal set and track Q4 goals',
+    tags: ['goals', 'q4'],
     status: TaskStatus.Active,
     createdAt: daysAgo(30),
     startDate: daysAgo(28),

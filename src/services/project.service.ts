@@ -56,6 +56,7 @@ class ProjectService {
       id: generateId(),
       title: dto.title,
       description: dto.description || '',
+      tags: dto.tags || [],
       createdAt: new Date(),
       isArchived: false,
     };
@@ -64,7 +65,7 @@ class ProjectService {
   }
 
   async update(id: string, dto: UpdateProjectDto): Promise<Project | undefined> {
-    await db.projects.update(id, dto);
+    await db.projects.update(id, dto as Partial<Project>);
     return this.getById(id);
   }
 

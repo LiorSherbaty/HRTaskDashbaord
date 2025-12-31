@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Calendar, Clock, AlertTriangle, FolderOpen, Plus, Trash2, Edit2 } from 'lucide-react';
 import { DialogWrapper } from './DialogWrapper';
-import { Button, Input, StatusBadge } from '@/components/common';
+import { Button, Input, StatusBadge, TagBadge } from '@/components/common';
 import { useAppStore, useUIStore } from '@/stores';
 import type { TaskViewModel } from '@/types';
 import { TaskStatus, STATUS_LABELS } from '@/types';
@@ -9,14 +9,16 @@ import { formatDate, formatRelativeDate } from '@/utils';
 
 export function TaskDetailDialog() {
   const { modal, closeModal, openModal } = useUIStore();
-  const { updateTaskStatus, addActivityLog, deleteActivityLogEntry, clearTaskBlocked, loadTasks } = useAppStore();
+  const { tasks, updateTaskStatus, addActivityLog, deleteActivityLogEntry, clearTaskBlocked, loadTasks } = useAppStore();
 
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
 
   const isOpen = modal.type === 'taskDetail';
   const modalData = modal.data as { task: TaskViewModel } | undefined;
-  const task = modalData?.task;
+  const taskId = modalData?.task?.id;
+  // Get the task from the store to ensure we have the latest data
+  const task = tasks.find(t => t.id === taskId) || modalData?.task;
 
   if (!task) return null;
 
@@ -90,6 +92,18 @@ export function TaskDetailDialog() {
           <div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</h4>
             <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{task.description}</p>
+          </div>
+        )}
+
+        {/* Tags */}
+        {task.tags && task.tags.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</h4>
+            <div className="flex flex-wrap gap-1">
+              {task.tags.map(tag => (
+                <TagBadge key={tag} tag={tag} />
+              ))}
+            </div>
           </div>
         )}
 

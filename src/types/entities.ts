@@ -4,6 +4,7 @@ export interface Project {
   id: string;
   title: string;
   description: string;
+  tags: string[];
   createdAt: Date;
   isArchived: boolean;
 }
@@ -13,6 +14,7 @@ export interface UserStory {
   projectId: string;
   title: string;
   description: string;
+  tags: string[];
   createdAt: Date;
   isArchived: boolean;
 }
@@ -29,6 +31,7 @@ export interface Task {
   userStoryId: string;
   title: string;
   description: string;
+  tags: string[];
   status: TaskStatus;
   createdAt: Date;
   startDate: Date | null;

@@ -5,7 +5,11 @@ import { useAppStore, useUIStore } from '@/stores';
 import { Button } from '@/components/common';
 import type { ProjectWithCounts } from '@/types';
 
-export function ProjectSidebar() {
+interface ProjectSidebarProps {
+  width: number;
+}
+
+export function ProjectSidebar({ width }: ProjectSidebarProps) {
   const { projects, archiveProject, unarchiveProject, deleteProject } = useAppStore();
   const {
     selection,
@@ -55,7 +59,7 @@ export function ProjectSidebar() {
   };
 
   return (
-    <aside className="w-[180px] sidebar flex flex-col">
+    <aside className="sidebar flex flex-col flex-shrink-0" style={{ width }}>
       <div className="p-2 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"

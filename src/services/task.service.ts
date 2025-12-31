@@ -78,6 +78,7 @@ class TaskService {
       userStoryId: dto.userStoryId,
       title: dto.title,
       description: dto.description || '',
+      tags: dto.tags || [],
       status: TaskStatus.New,
       createdAt: now,
       startDate: dto.startDate || null,

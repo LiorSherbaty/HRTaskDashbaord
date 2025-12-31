@@ -3,8 +3,15 @@ import { Button, SearchInput } from '@/components/common';
 import { useUIStore, useFilterStore } from '@/stores';
 
 export function Header() {
-  const { isDarkMode, toggleTheme, openModal, activeTab, setActiveTab } = useUIStore();
+  const { isDarkMode, toggleTheme, openModal, activeTab, setActiveTab, clearSelection } = useUIStore();
   const { searchTerm, setSearchTerm } = useFilterStore();
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    if (value) {
+      clearSelection();
+    }
+  };
 
   return (
     <header className="h-14 flex items-center px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -41,7 +48,7 @@ export function Header() {
       <div className="flex-1 max-w-md mx-8">
         <SearchInput
           value={searchTerm}
-          onChange={setSearchTerm}
+          onChange={handleSearchChange}
           placeholder="Search tasks, projects, stories..."
         />
       </div>

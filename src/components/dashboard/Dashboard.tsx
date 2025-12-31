@@ -22,11 +22,12 @@ export function Dashboard() {
   // Filter tasks
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
-      // Search filter
+      // Search filter (includes tags)
       if (searchTerm && !matchesSearch(task.title, searchTerm) &&
           !matchesSearch(task.description, searchTerm) &&
           !matchesSearch(task.projectTitle, searchTerm) &&
-          !matchesSearch(task.userStoryTitle, searchTerm)) {
+          !matchesSearch(task.userStoryTitle, searchTerm) &&
+          !matchesSearch(task.tags?.join(' '), searchTerm)) {
         return false;
       }
 

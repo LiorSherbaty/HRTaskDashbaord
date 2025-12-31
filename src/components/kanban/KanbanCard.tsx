@@ -5,6 +5,7 @@ import { cn, formatShortDate } from '@/utils';
 import type { TaskViewModel } from '@/types';
 import { useUIStore, useAppStore } from '@/stores';
 import { useState } from 'react';
+import { TagBadge } from '@/components/common';
 
 interface KanbanCardProps {
   task: TaskViewModel;
@@ -136,6 +137,18 @@ export function KanbanCard({ task }: KanbanCardProps) {
         <div className="mt-2 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
           <AlertTriangle className="w-3 h-3" />
           <span className="truncate">{task.blockedBy}</span>
+        </div>
+      )}
+
+      {/* Tags */}
+      {task.tags && task.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {task.tags.slice(0, 3).map(tag => (
+            <TagBadge key={tag} tag={tag} />
+          ))}
+          {task.tags.length > 3 && (
+            <span className="text-xs text-gray-500">+{task.tags.length - 3}</span>
+          )}
         </div>
       )}
     </div>

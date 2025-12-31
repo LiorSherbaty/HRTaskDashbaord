@@ -5,7 +5,11 @@ import { useAppStore, useUIStore } from '@/stores';
 import { Button } from '@/components/common';
 import type { UserStoryWithCounts } from '@/types';
 
-export function UserStorySidebar() {
+interface UserStorySidebarProps {
+  width: number;
+}
+
+export function UserStorySidebar({ width }: UserStorySidebarProps) {
   const { userStories, loadUserStories, archiveUserStory, unarchiveUserStory, deleteUserStory } = useAppStore();
   const {
     selection,
@@ -60,7 +64,7 @@ export function UserStorySidebar() {
   };
 
   return (
-    <aside className="w-[200px] sidebar flex flex-col">
+    <aside className="sidebar flex flex-col flex-shrink-0" style={{ width }}>
       <div className="p-2 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"

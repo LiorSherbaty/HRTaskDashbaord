@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DialogWrapper } from './DialogWrapper';
-import { Button, Input, TextArea, DatePicker } from '@/components/common';
+import { Button, Input, TextArea, DatePicker, TagInput } from '@/components/common';
 import { useAppStore, useUIStore } from '@/stores';
 import type { Task } from '@/types';
 import { format } from 'date-fns';
@@ -21,6 +21,7 @@ type TaskFormData = z.infer<typeof taskSchema>;
 export function TaskDialog() {
   const { modal, closeModal, selection } = useUIStore();
   const { createTask, updateTask } = useAppStore();
+  const [tags, setTags] = useState<string[]>([]);
 
   const isOpen = modal.type === 'task';
   const isEdit = modal.mode === 'edit';
@@ -50,6 +51,7 @@ export function TaskDialog() {
           startDate: task.startDate ? format(task.startDate, 'yyyy-MM-dd') : '',
           lastUpdatedAt: task.lastUpdatedAt ? format(task.lastUpdatedAt, "yyyy-MM-dd'T'HH:mm") : now,
         });
+        setTags(task.tags || []);
       } else {
         reset({
           title: '',
@@ -58,6 +60,7 @@ export function TaskDialog() {
           startDate: today,
           lastUpdatedAt: now,
         });
+        setTags([]);
       }
     }
   }, [isOpen, isEdit, modal.data, reset]);
@@ -72,6 +75,7 @@ export function TaskDialog() {
         await updateTask(task.id, {
           title: data.title,
           description: data.description,
+          tags,
           dueDate: dueDate || null,
           startDate: startDate || null,
           lastUpdatedAt,
@@ -81,12 +85,14 @@ export function TaskDialog() {
           userStoryId,
           title: data.title,
           description: data.description,
+          tags,
           dueDate,
           startDate,
           lastUpdatedAt,
         });
       }
       reset();
+      setTags([]);
       closeModal();
     } catch (error) {
       console.error('Error saving task:', error);
@@ -95,6 +101,7 @@ export function TaskDialog() {
 
   const handleClose = () => {
     reset();
+    setTags([]);
     closeModal();
   };
 
@@ -118,6 +125,13 @@ export function TaskDialog() {
           rows={4}
           error={errors.description?.message}
           {...register('description')}
+        />
+
+        <TagInput
+          label="Tags"
+          value={tags}
+          onChange={setTags}
+          placeholder="Add tags..."
         />
 
         <div className="grid grid-cols-2 gap-4">

@@ -44,6 +44,7 @@ class UserStoryService {
       projectId: dto.projectId,
       title: dto.title,
       description: dto.description || '',
+      tags: dto.tags || [],
       createdAt: new Date(),
       isArchived: false,
     };
@@ -52,7 +53,7 @@ class UserStoryService {
   }
 
   async update(id: string, dto: UpdateUserStoryDto): Promise<UserStory | undefined> {
-    await db.userStories.update(id, dto);
+    await db.userStories.update(id, dto as Partial<UserStory>);
     return this.getById(id);
   }
 

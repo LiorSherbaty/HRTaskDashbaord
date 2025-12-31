@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DialogWrapper } from './DialogWrapper';
-import { Button, Input, TextArea } from '@/components/common';
+import { Button, Input, TextArea, TagInput } from '@/components/common';
 import { useAppStore, useUIStore } from '@/stores';
 import type { UserStory } from '@/types';
 
@@ -17,6 +17,7 @@ type UserStoryFormData = z.infer<typeof userStorySchema>;
 export function UserStoryDialog() {
   const { modal, closeModal, selection } = useUIStore();
   const { createUserStory, updateUserStory } = useAppStore();
+  const [tags, setTags] = useState<string[]>([]);
 
   const isOpen = modal.type === 'userStory';
   const isEdit = modal.mode === 'edit';
@@ -41,11 +42,13 @@ export function UserStoryDialog() {
           title: userStory.title,
           description: userStory.description || '',
         });
+        setTags(userStory.tags || []);
       } else {
         reset({
           title: '',
           description: '',
         });
+        setTags([]);
       }
     }
   }, [isOpen, isEdit, userStory, reset]);
@@ -53,15 +56,17 @@ export function UserStoryDialog() {
   const onSubmit = async (data: UserStoryFormData) => {
     try {
       if (isEdit && userStory) {
-        await updateUserStory(userStory.id, data);
+        await updateUserStory(userStory.id, { ...data, tags });
       } else if (projectId) {
         await createUserStory({
           projectId,
           title: data.title,
           description: data.description,
+          tags,
         });
       }
       reset();
+      setTags([]);
       closeModal();
     } catch (error) {
       console.error('Error saving user story:', error);
@@ -70,6 +75,7 @@ export function UserStoryDialog() {
 
   const handleClose = () => {
     reset();
+    setTags([]);
     closeModal();
   };
 
@@ -93,6 +99,13 @@ export function UserStoryDialog() {
           rows={4}
           error={errors.description?.message}
           {...register('description')}
+        />
+
+        <TagInput
+          label="Tags"
+          value={tags}
+          onChange={setTags}
+          placeholder="Add tags..."
         />
 
         <div className="flex justify-end gap-3 pt-4">

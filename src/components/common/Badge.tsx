@@ -7,6 +7,11 @@ interface BadgeProps {
   className?: string;
 }
 
+interface TagBadgeProps {
+  tag: string;
+  className?: string;
+}
+
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
   return (
     <span
@@ -46,6 +51,20 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       )}
     >
       {label}
+    </span>
+  );
+}
+
+export function TagBadge({ tag, className }: TagBadgeProps) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+        'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+        className
+      )}
+    >
+      {tag}
     </span>
   );
 }

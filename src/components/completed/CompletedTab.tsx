@@ -18,9 +18,16 @@ const TIME_FILTER_OPTIONS = [
 
 export function CompletedTab() {
   const { tasks } = useAppStore();
-  const { openModal, selection } = useUIStore();
+  const { openModal, selection, clearSelection } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('thisMonth');
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (value) {
+      clearSelection();
+    }
+  };
 
   const completedTasks = useMemo(() => {
     let filtered = tasks.filter(t => t.status === TaskStatus.Completed);
@@ -68,14 +75,15 @@ export function CompletedTab() {
         break;
     }
 
-    // Apply search filter
+    // Apply search filter (includes tags)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(t =>
         t.title.toLowerCase().includes(query) ||
         t.description?.toLowerCase().includes(query) ||
         t.projectTitle.toLowerCase().includes(query) ||
-        t.userStoryTitle.toLowerCase().includes(query)
+        t.userStoryTitle.toLowerCase().includes(query) ||
+        t.tags?.some(tag => tag.toLowerCase().includes(query))
       );
     }
 
@@ -114,7 +122,7 @@ export function CompletedTab() {
       <div className="flex items-center gap-4 mb-6">
         <SearchInput
           value={searchQuery}
-          onChange={setSearchQuery}
+          onChange={handleSearchChange}
           placeholder="Search completed tasks..."
           className="w-64"
         />

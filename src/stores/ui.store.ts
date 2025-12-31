@@ -49,6 +49,12 @@ interface UIState {
   toggleShowArchivedProjects: () => void;
   showArchivedStories: boolean;
   toggleShowArchivedStories: () => void;
+
+  // Sidebar widths
+  projectSidebarWidth: number;
+  userStorySidebarWidth: number;
+  setProjectSidebarWidth: (width: number) => void;
+  setUserStorySidebarWidth: (width: number) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -107,6 +113,12 @@ export const useUIStore = create<UIState>()(
       toggleShowArchivedStories: () => set((state) => ({
         showArchivedStories: !state.showArchivedStories,
       })),
+
+      // Sidebar widths
+      projectSidebarWidth: 180,
+      userStorySidebarWidth: 200,
+      setProjectSidebarWidth: (width) => set({ projectSidebarWidth: width }),
+      setUserStorySidebarWidth: (width) => set({ userStorySidebarWidth: width }),
     }),
     {
       name: 'hr-taskdashboard-ui',
@@ -114,6 +126,8 @@ export const useUIStore = create<UIState>()(
         isDarkMode: state.isDarkMode,
         showArchivedProjects: state.showArchivedProjects,
         showArchivedStories: state.showArchivedStories,
+        projectSidebarWidth: state.projectSidebarWidth,
+        userStorySidebarWidth: state.userStorySidebarWidth,
       }),
     }
   )

@@ -15,6 +15,13 @@ export class HRTaskDashboardDB extends Dexie {
       tasks: 'id, userStoryId, status, createdAt, startDate, dueDate, lastUpdatedAt, isBlocked, isArchived',
     });
 
+    // Version 2: Add tags field with multi-entry index
+    this.version(2).stores({
+      projects: 'id, title, createdAt, isArchived, *tags',
+      userStories: 'id, projectId, title, createdAt, isArchived, *tags',
+      tasks: 'id, userStoryId, status, createdAt, startDate, dueDate, lastUpdatedAt, isBlocked, isArchived, *tags',
+    });
+
     // Date conversion hooks
     this.projects.hook('reading', (obj) => {
       obj.createdAt = new Date(obj.createdAt);

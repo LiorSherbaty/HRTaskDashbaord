@@ -97,6 +97,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   updateProject: async (id, dto) => {
     await projectService.update(id, dto);
     await get().loadProjects();
+    await get().refresh();
   },
 
   archiveProject: async (id) => {
@@ -137,6 +138,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (story) {
       await userStoryService.update(id, dto);
       await get().loadUserStories(story.projectId);
+      await get().refresh();
     }
   },
 

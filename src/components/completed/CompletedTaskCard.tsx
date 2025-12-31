@@ -1,5 +1,5 @@
 import { Calendar, FolderOpen, RotateCcw } from 'lucide-react';
-import { Button } from '@/components/common';
+import { Button, TagBadge } from '@/components/common';
 import { useAppStore } from '@/stores';
 import type { TaskViewModel } from '@/types';
 import { TaskStatus } from '@/types';
@@ -45,6 +45,15 @@ export function CompletedTaskCard({ task }: CompletedTaskCardProps) {
               <span>Duration: {task.daysOpen} days</span>
             )}
           </div>
+
+          {/* Tags */}
+          {task.tags && task.tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {task.tags.map(tag => (
+                <TagBadge key={tag} tag={tag} />
+              ))}
+            </div>
+          )}
         </div>
 
         <Button

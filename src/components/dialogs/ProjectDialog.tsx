@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DialogWrapper } from './DialogWrapper';
-import { Button, Input, TextArea } from '@/components/common';
+import { Button, Input, TextArea, TagInput } from '@/components/common';
 import { useAppStore, useUIStore } from '@/stores';
 import type { Project } from '@/types';
 
@@ -17,6 +17,7 @@ type ProjectFormData = z.infer<typeof projectSchema>;
 export function ProjectDialog() {
   const { modal, closeModal } = useUIStore();
   const { createProject, updateProject } = useAppStore();
+  const [tags, setTags] = useState<string[]>([]);
 
   const isOpen = modal.type === 'project';
   const isEdit = modal.mode === 'edit';
@@ -39,11 +40,13 @@ export function ProjectDialog() {
           title: project.title,
           description: project.description || '',
         });
+        setTags(project.tags || []);
       } else {
         reset({
           title: '',
           description: '',
         });
+        setTags([]);
       }
     }
   }, [isOpen, isEdit, project, reset]);
@@ -51,11 +54,12 @@ export function ProjectDialog() {
   const onSubmit = async (data: ProjectFormData) => {
     try {
       if (isEdit && project) {
-        await updateProject(project.id, data);
+        await updateProject(project.id, { ...data, tags });
       } else {
-        await createProject(data);
+        await createProject({ ...data, tags });
       }
       reset();
+      setTags([]);
       closeModal();
     } catch (error) {
       console.error('Error saving project:', error);
@@ -64,6 +68,7 @@ export function ProjectDialog() {
 
   const handleClose = () => {
     reset();
+    setTags([]);
     closeModal();
   };
 
@@ -87,6 +92,13 @@ export function ProjectDialog() {
           rows={4}
           error={errors.description?.message}
           {...register('description')}
+        />
+
+        <TagInput
+          label="Tags"
+          value={tags}
+          onChange={setTags}
+          placeholder="Add tags..."
         />
 
         <div className="flex justify-end gap-3 pt-4">

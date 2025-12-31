@@ -1,7 +1,7 @@
 import { Calendar, Clock, AlertTriangle, FolderOpen } from 'lucide-react';
 import { cn, formatShortDate } from '@/utils';
 import type { TaskViewModel } from '@/types';
-import { StatusBadge } from '@/components/common';
+import { StatusBadge, TagBadge } from '@/components/common';
 import { useUIStore } from '@/stores';
 
 interface TaskCardProps {
@@ -101,9 +101,12 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         </div>
       )}
 
-      {/* Status Badge */}
-      <div className="mt-2">
+      {/* Status Badge and Tags */}
+      <div className="mt-2 flex flex-wrap items-center gap-1">
         <StatusBadge status={task.status} />
+        {task.tags?.map(tag => (
+          <TagBadge key={tag} tag={tag} />
+        ))}
       </div>
     </div>
   );
