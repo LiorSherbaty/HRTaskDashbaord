@@ -25,6 +25,8 @@ export interface UpdateUserStoryDto {
   description?: string;
   tags?: string[];
   isArchived?: boolean;
+  projectId?: string;
+  sortOrder?: number;
 }
 
 export interface CreateTaskDto {
@@ -47,6 +49,7 @@ export interface UpdateTaskDto {
   blockedBy?: string;
   blockedReason?: string;
   lastUpdatedAt?: Date;
+  userStoryId?: string;
 }
 
 export interface AddActivityLogDto {

@@ -3,9 +3,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DialogWrapper } from './DialogWrapper';
-import { Button, Input, TextArea, DatePicker, TagInput } from '@/components/common';
+import { Button, Input, TextArea, DatePicker, TagInput, Select } from '@/components/common';
 import { useAppStore, useUIStore } from '@/stores';
-import type { Task } from '@/types';
+import { userStoryService } from '@/services';
+import type { Task, UserStory } from '@/types';
 import { format } from 'date-fns';
 
 const taskSchema = z.object({
@@ -20,14 +21,19 @@ type TaskFormData = z.infer<typeof taskSchema>;
 
 export function TaskDialog() {
   const { modal, closeModal, selection } = useUIStore();
-  const { createTask, updateTask } = useAppStore();
+  const { projects, createTask, updateTask } = useAppStore();
   const [tags, setTags] = useState<string[]>([]);
+  const [selectedUserStoryId, setSelectedUserStoryId] = useState<string>('');
+  const [allUserStories, setAllUserStories] = useState<UserStory[]>([]);
 
   const isOpen = modal.type === 'task';
   const isEdit = modal.mode === 'edit';
   const modalData = modal.data as { userStoryId?: string; task?: Task } | undefined;
   const task = modalData?.task;
   const userStoryId = modalData?.userStoryId || selection.userStoryId;
+
+  // Get active projects for grouping
+  const activeProjects = projects.filter(p => !p.isArchived);
 
   const {
     register,
@@ -37,6 +43,15 @@ export function TaskDialog() {
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
   });
+
+  // Load all user stories directly from service when dialog opens in edit mode
+  useEffect(() => {
+    if (isOpen && isEdit) {
+      userStoryService.getAll().then((stories) => {
+        setAllUserStories(stories);
+      });
+    }
+  }, [isOpen, isEdit]);
 
   // Reset form when modal opens with new data
   useEffect(() => {
@@ -52,6 +67,7 @@ export function TaskDialog() {
           lastUpdatedAt: task.lastUpdatedAt ? format(task.lastUpdatedAt, "yyyy-MM-dd'T'HH:mm") : now,
         });
         setTags(task.tags || []);
+        setSelectedUserStoryId(task.userStoryId);
       } else {
         reset({
           title: '',
@@ -61,9 +77,10 @@ export function TaskDialog() {
           lastUpdatedAt: now,
         });
         setTags([]);
+        setSelectedUserStoryId(userStoryId || '');
       }
     }
-  }, [isOpen, isEdit, modal.data, reset]);
+  }, [isOpen, isEdit, modal.data, userStoryId, reset]);
 
   const onSubmit = async (data: TaskFormData) => {
     try {
@@ -72,17 +89,22 @@ export function TaskDialog() {
       const lastUpdatedAt = data.lastUpdatedAt ? new Date(data.lastUpdatedAt) : new Date();
 
       if (isEdit && task) {
-        await updateTask(task.id, {
+        // Include userStoryId if it changed
+        const updates: Parameters<typeof updateTask>[1] = {
           title: data.title,
           description: data.description,
           tags,
           dueDate: dueDate || null,
           startDate: startDate || null,
           lastUpdatedAt,
-        });
-      } else if (userStoryId) {
+        };
+        if (selectedUserStoryId && selectedUserStoryId !== task.userStoryId) {
+          updates.userStoryId = selectedUserStoryId;
+        }
+        await updateTask(task.id, updates);
+      } else if (selectedUserStoryId) {
         await createTask({
-          userStoryId,
+          userStoryId: selectedUserStoryId,
           title: data.title,
           description: data.description,
           tags,
@@ -93,6 +115,8 @@ export function TaskDialog() {
       }
       reset();
       setTags([]);
+      setSelectedUserStoryId('');
+      setAllUserStories([]);
       closeModal();
     } catch (error) {
       console.error('Error saving task:', error);
@@ -102,8 +126,16 @@ export function TaskDialog() {
   const handleClose = () => {
     reset();
     setTags([]);
+    setSelectedUserStoryId('');
+    setAllUserStories([]);
     closeModal();
   };
+
+  // Group user stories by project for the dropdown
+  const userStoriesByProject = activeProjects.map(project => ({
+    project,
+    stories: allUserStories.filter(s => s.projectId === project.id && !s.isArchived),
+  })).filter(group => group.stories.length > 0);
 
   return (
     <DialogWrapper
@@ -133,6 +165,25 @@ export function TaskDialog() {
           onChange={setTags}
           placeholder="Add tags..."
         />
+
+        {/* User Story selector - only show in edit mode with multiple options */}
+        {isEdit && userStoriesByProject.length > 0 && (
+          <Select
+            label="User Story"
+            value={selectedUserStoryId}
+            onChange={(e) => setSelectedUserStoryId(e.target.value)}
+          >
+            {userStoriesByProject.map(({ project, stories }) => (
+              <optgroup key={project.id} label={project.title}>
+                {stories.map(story => (
+                  <option key={story.id} value={story.id}>
+                    {story.title}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </Select>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <DatePicker

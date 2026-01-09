@@ -195,6 +195,11 @@ export function SettingsDialog() {
             Close
           </Button>
         </div>
+
+        {/* Version Info */}
+        <div className="text-center text-xs text-gray-400 dark:text-gray-500 pt-2">
+          HR TaskDashboard v1.1.0
+        </div>
       </div>
     </DialogWrapper>
   );

@@ -147,9 +147,17 @@ Project (1) ──────< UserStory (many)
 
 | Store | Purpose | Persisted? |
 |-------|---------|------------|
-| `useAppStore` | Projects, user stories, tasks, CRUD operations | No (data in IndexedDB) |
+| `useAppStore` | Projects, user stories, tasks, CRUD + reorder/move operations | No (data in IndexedDB) |
 | `useUIStore` | Theme, sidebar selection, modal state, view preferences | Yes (localStorage) |
 | `useFilterStore` | Search term, status filter, quick filters | No |
+
+### Key Store Actions (v1.1.0)
+
+| Action | Purpose |
+|--------|---------|
+| `reorderProjects(projectIds)` | Update sortOrder for projects based on array order |
+| `reorderUserStories(userStoryIds)` | Update sortOrder for user stories based on array order |
+| `loadAllUserStories()` | Load all user stories (for TaskDialog move dropdown) |
 
 ---
 
@@ -294,6 +302,41 @@ Project (1) ──────< UserStory (many)
      },
    }));
    ```
+
+### Move Item to Different Parent
+
+User stories and tasks can be moved to different parents via edit dialogs:
+
+**Move User Story to Different Project:**
+```typescript
+// In UserStoryDialog.tsx - add project selector in edit mode
+const [selectedProjectId, setSelectedProjectId] = useState(story.projectId);
+const [showMoveConfirm, setShowMoveConfirm] = useState(false);
+
+// On submit, if projectId changed, show inline confirmation
+if (selectedProjectId !== story.projectId) {
+  setShowMoveConfirm(true);
+} else {
+  await updateUserStory(story.id, { ...data, projectId: selectedProjectId });
+}
+```
+
+**Move Task to Different User Story:**
+```typescript
+// In TaskDialog.tsx - add user story selector grouped by project
+// Fetch all user stories directly from service (not store, which filters by current view)
+useEffect(() => {
+  if (isOpen && isEdit) {
+    userStoryService.getAll().then(setAllUserStories);
+  }
+}, [isOpen, isEdit]);
+
+// Group by project for UX
+const userStoriesByProject = activeProjects.map(project => ({
+  project,
+  stories: allUserStories.filter(s => s.projectId === project.id && !s.isArchived),
+}));
+```
 
 ---
 
@@ -473,6 +516,37 @@ if (!validStatuses.includes(overId as TaskStatus)) {
 1. **Data persists between sessions** - Clear with Settings → Clear All Data
 2. **Schema changes** require version bump in `db/database.ts`
 3. **Query optimization**: Use indexed fields for filters
+4. **Current schema version**: 3 (added `sortOrder` to projects and userStories)
+
+### Database Schema (v3)
+
+```typescript
+// Projects and UserStories include sortOrder for custom ordering
+projects: 'id, title, createdAt, isArchived, sortOrder, *tags'
+userStories: 'id, projectId, title, createdAt, isArchived, sortOrder, *tags'
+tasks: 'id, userStoryId, title, status, createdAt, dueDate, isArchived, *tags'
+```
+
+### Reordering Pattern (Sidebar)
+
+```typescript
+// Use @dnd-kit with SortableContext
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+
+function SortableItem({ id, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  // Apply styles and return draggable item
+}
+
+function handleDragEnd(event: DragEndEvent) {
+  const { active, over } = event;
+  if (over && active.id !== over.id) {
+    const newOrder = arrayMove(items, oldIndex, newIndex).map(item => item.id);
+    reorderItems(newOrder); // Call store action
+  }
+}
+```
 
 ---
 
@@ -548,4 +622,4 @@ src/
 
 ---
 
-*Last updated: December 2024*
+*Last updated: January 2025 (v1.1.0)*

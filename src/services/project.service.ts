@@ -5,7 +5,7 @@ import { generateId } from '@/utils';
 
 class ProjectService {
   async getAll(includeArchived = false): Promise<Project[]> {
-    const query = db.projects.orderBy('createdAt');
+    const query = db.projects.orderBy('sortOrder');
     const projects = await query.toArray();
     if (!includeArchived) {
       return projects.filter(p => !p.isArchived);
@@ -52,6 +52,12 @@ class ProjectService {
   }
 
   async create(dto: CreateProjectDto): Promise<Project> {
+    // Get max sortOrder and add new project at the bottom
+    const allProjects = await db.projects.toArray();
+    const maxSortOrder = allProjects.length > 0
+      ? Math.max(...allProjects.map(p => p.sortOrder ?? 0))
+      : -1;
+
     const project: Project = {
       id: generateId(),
       title: dto.title,
@@ -59,9 +65,19 @@ class ProjectService {
       tags: dto.tags || [],
       createdAt: new Date(),
       isArchived: false,
+      sortOrder: maxSortOrder + 1,
     };
     await db.projects.add(project);
     return project;
+  }
+
+  async reorder(projectIds: string[]): Promise<void> {
+    // Update sortOrder for each project based on array index
+    await db.transaction('rw', db.projects, async () => {
+      for (let i = 0; i < projectIds.length; i++) {
+        await db.projects.update(projectIds[i], { sortOrder: i });
+      }
+    });
   }
 
   async update(id: string, dto: UpdateProjectDto): Promise<Project | undefined> {

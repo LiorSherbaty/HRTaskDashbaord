@@ -5,6 +5,8 @@ A desktop task management application designed for HR teams to track ongoing res
 ## Features
 
 - **Hierarchical Organization**: Projects > User Stories > Tasks
+- **Drag-and-Drop Reordering**: Reorder projects and user stories in sidebars with persistent custom ordering
+- **Move Items Between Parents**: Move user stories between projects, and tasks between user stories
 - **Kanban Board**: Drag-and-drop task management with status columns (New, Active, Blocked, Completed)
 - **Dashboard Views**: See all tasks organized by status across projects
 - **Smart Tracking**:
@@ -79,6 +81,9 @@ npm run electron:build
 
 - **Dashboard View**: Click a project in the left sidebar to filter tasks
 - **Kanban View**: Click a user story in the middle sidebar to see its tasks
+- **Reorder Items**: Drag projects or user stories in sidebars to customize their order
+- **Move User Story**: Edit a user story and select a different project to move it (with all its tasks)
+- **Move Task**: Edit a task and select a different user story to move it
 - **Edit/Delete**: Hover over projects or user stories to see the action menu (...)
 - **Block a Task**: Drag to the Blocked column to add blocker details
 - **Activity Log**: Click a task to open details and add progress notes

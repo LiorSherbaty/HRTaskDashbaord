@@ -7,6 +7,7 @@ export interface Project {
   tags: string[];
   createdAt: Date;
   isArchived: boolean;
+  sortOrder: number;
 }
 
 export interface UserStory {
@@ -17,6 +18,7 @@ export interface UserStory {
   tags: string[];
   createdAt: Date;
   isArchived: boolean;
+  sortOrder: number;
 }
 
 export interface ActivityLogEntry {

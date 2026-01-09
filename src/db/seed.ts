@@ -18,6 +18,7 @@ export async function seedDatabase() {
     tags: ['hr', 'onboarding'],
     createdAt: daysAgo(90),
     isArchived: false,
+    sortOrder: 0,
   });
 
   const story1Id = generateId();
@@ -29,6 +30,7 @@ export async function seedDatabase() {
     tags: ['documentation'],
     createdAt: daysAgo(90),
     isArchived: false,
+    sortOrder: 0,
   });
 
   await db.tasks.add({
@@ -93,6 +95,7 @@ export async function seedDatabase() {
     tags: ['mentoring', 'development'],
     createdAt: daysAgo(60),
     isArchived: false,
+    sortOrder: 1,
   });
 
   const story2Id = generateId();
@@ -104,6 +107,7 @@ export async function seedDatabase() {
     tags: ['weekly'],
     createdAt: daysAgo(60),
     isArchived: false,
+    sortOrder: 0,
   });
 
   await db.tasks.add({

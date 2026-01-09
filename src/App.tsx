@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout';
 import { Dashboard } from '@/components/dashboard';
 import { KanbanBoard } from '@/components/kanban';
@@ -14,6 +14,7 @@ import {
   HelpDialog,
 } from '@/components/dialogs';
 import { useUIStore, useAppStore } from '@/stores';
+import { cleanupOrphanedRecords } from '@/db';
 
 function AppContent() {
   const { activeTab, selection } = useUIStore();
@@ -50,6 +51,20 @@ function AppContent() {
 
 function App() {
   const { isDarkMode } = useUIStore();
+  const { loadProjects } = useAppStore();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Cleanup orphaned records and initialize app on mount
+  useEffect(() => {
+    async function initialize() {
+      // Clean up any orphaned tasks/stories from corrupted data
+      await cleanupOrphanedRecords();
+      // Load fresh data
+      await loadProjects();
+      setIsInitialized(true);
+    }
+    initialize();
+  }, [loadProjects]);
 
   // Apply theme to document
   useEffect(() => {
@@ -79,6 +94,15 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Show loading state while initializing
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">

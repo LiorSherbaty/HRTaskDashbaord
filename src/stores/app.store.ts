@@ -36,14 +36,17 @@ interface AppState {
   archiveProject: (id: string) => Promise<void>;
   unarchiveProject: (id: string) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
+  reorderProjects: (projectIds: string[]) => Promise<void>;
 
   // Actions - User Stories
   loadUserStories: (projectId: string) => Promise<void>;
+  loadAllUserStories: () => Promise<void>;
   createUserStory: (dto: CreateUserStoryDto) => Promise<UserStory>;
   updateUserStory: (id: string, dto: Partial<UserStory>) => Promise<void>;
   archiveUserStory: (id: string) => Promise<void>;
   unarchiveUserStory: (id: string) => Promise<void>;
   deleteUserStory: (id: string) => Promise<void>;
+  reorderUserStories: (userStoryIds: string[]) => Promise<void>;
 
   // Actions - Tasks
   loadTasks: (userStoryId: string | null) => Promise<void>;
@@ -115,6 +118,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     await get().loadProjects();
   },
 
+  reorderProjects: async (projectIds) => {
+    await projectService.reorder(projectIds);
+    await get().loadProjects();
+  },
+
   // User Stories
   loadUserStories: async (projectId) => {
     set({ isLoading: true, error: null, currentProjectId: projectId });
@@ -123,6 +131,26 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ userStories, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  loadAllUserStories: async () => {
+    try {
+      const userStories = await userStoryService.getAll();
+      // Convert to UserStoryWithCounts - need to get counts for each story
+      const result: UserStoryWithCounts[] = [];
+      for (const story of userStories) {
+        const tasks = await taskService.getByUserStoryId(story.id);
+        result.push({
+          ...story,
+          taskCount: tasks.length,
+          completedCount: tasks.filter(t => t.status === TaskStatus.Completed).length,
+          blockedCount: tasks.filter(t => t.status === TaskStatus.Blocked).length,
+        });
+      }
+      set({ userStories: result });
+    } catch (error) {
+      set({ error: (error as Error).message });
     }
   },
 
@@ -136,8 +164,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   updateUserStory: async (id, dto) => {
     const story = await userStoryService.getById(id);
     if (story) {
+      const { currentProjectId } = get();
+
       await userStoryService.update(id, dto);
-      await get().loadUserStories(story.projectId);
+
+      // Reload projects for updated counts in sidebar
+      await get().loadProjects();
+
+      // Reload user stories for the currently viewed project (removes moved story from list)
+      if (currentProjectId) {
+        await get().loadUserStories(currentProjectId);
+      }
+
+      // Refresh tasks view
       await get().refresh();
     }
   },
@@ -166,6 +205,14 @@ export const useAppStore = create<AppState>((set, get) => ({
       await userStoryService.delete(id);
       await get().loadUserStories(story.projectId);
       await get().loadProjects();
+    }
+  },
+
+  reorderUserStories: async (userStoryIds) => {
+    await userStoryService.reorder(userStoryIds);
+    const { currentProjectId } = get();
+    if (currentProjectId) {
+      await get().loadUserStories(currentProjectId);
     }
   },
 

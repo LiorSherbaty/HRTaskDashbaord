@@ -27,8 +27,13 @@ export function TagInput({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load all existing tags for autocomplete
+  const loadTags = async () => {
+    const tags = await tagService.getAllTags();
+    setAllTags(tags);
+  };
+
   useEffect(() => {
-    tagService.getAllTags().then(setAllTags);
+    loadTags();
   }, []);
 
   // Filter suggestions based on input
@@ -77,11 +82,23 @@ export function TagInput({
     onChange(value.filter(tag => tag !== tagToRemove));
   };
 
+  // Check if "Create tag" option should be shown
+  const showCreateOption = inputValue.trim() &&
+    !suggestions.includes(inputValue.trim()) &&
+    !value.includes(inputValue.trim());
+
+  // Total selectable items (suggestions + create option if shown)
+  const totalItems = suggestions.length + (showCreateOption ? 1 : 0);
+  const createOptionIndex = suggestions.length; // Index of "Create tag" option
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
         addTag(suggestions[selectedIndex]);
+      } else if (selectedIndex === createOptionIndex && showCreateOption) {
+        // "Create tag" option is selected
+        addTag(inputValue);
       } else if (inputValue.trim()) {
         addTag(inputValue);
       }
@@ -90,7 +107,7 @@ export function TagInput({
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       setSelectedIndex(prev =>
-        prev < suggestions.length - 1 ? prev + 1 : prev
+        prev < totalItems - 1 ? prev + 1 : prev
       );
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
@@ -149,7 +166,10 @@ export function TagInput({
             setInputValue(e.target.value);
             setShowSuggestions(true);
           }}
-          onFocus={() => setShowSuggestions(true)}
+          onFocus={() => {
+            loadTags(); // Reload tags to get latest from database
+            setShowSuggestions(true);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={value.length === 0 ? placeholder : ''}
           className="flex-1 min-w-[120px] outline-none bg-transparent
@@ -159,7 +179,7 @@ export function TagInput({
       </div>
 
       {/* Suggestions Dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && (suggestions.length > 0 || (inputValue.trim() && !value.includes(inputValue.trim()))) && (
         <div className="relative">
           <ul className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800
                          border border-gray-300 dark:border-gray-600 rounded-md shadow-lg
@@ -179,22 +199,23 @@ export function TagInput({
                 {suggestion}
               </li>
             ))}
+            {/* Create new tag option - shown at the bottom */}
+            {showCreateOption && (
+              <li
+                onClick={() => addTag(inputValue)}
+                className={cn(
+                  'px-3 py-2 text-sm cursor-pointer',
+                  'text-gray-600 dark:text-gray-400',
+                  suggestions.length > 0 && 'border-t border-gray-200 dark:border-gray-700',
+                  selectedIndex === createOptionIndex
+                    ? 'bg-blue-100 dark:bg-blue-900'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                )}
+              >
+                Create tag "{inputValue.trim()}"
+              </li>
+            )}
           </ul>
-        </div>
-      )}
-
-      {/* Create new tag hint */}
-      {showSuggestions && inputValue.trim() && !suggestions.includes(inputValue.trim()) && !value.includes(inputValue.trim()) && (
-        <div className="relative">
-          <div
-            onClick={() => addTag(inputValue)}
-            className="absolute z-10 w-full mt-1 px-3 py-2 text-sm cursor-pointer
-                       bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
-                       rounded-md shadow-lg text-gray-600 dark:text-gray-400
-                       hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            Create tag "{inputValue.trim()}"
-          </div>
         </div>
       )}
 

@@ -5,6 +5,14 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Set portable data location (relative to exe) in production
+if (app.isPackaged) {
+  const exePath = app.getPath('exe');
+  const exeDir = path.dirname(exePath);
+  const dataPath = path.join(exeDir, 'data');
+  app.setPath('userData', dataPath);
+}
+
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {

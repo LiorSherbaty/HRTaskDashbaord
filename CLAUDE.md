@@ -22,9 +22,14 @@ UI Components → Zustand Stores → Services → Dexie (IndexedDB)
 ```
 
 ### Stores
-- `useAppStore` - Data: projects, userStories, tasks + CRUD actions
+- `useAppStore` - Data: projects, userStories, tasks + CRUD actions + reorder/move actions
 - `useUIStore` - UI: theme, selection, modals (persisted to localStorage)
 - `useFilterStore` - Search and filter state
+
+### Key Store Actions (v1.1.0)
+- `reorderProjects(projectIds)` - Update sortOrder for projects
+- `reorderUserStories(userStoryIds)` - Update sortOrder for user stories
+- `loadAllUserStories()` - Load all stories for move dialog dropdown
 
 ### Key Locations
 
@@ -80,3 +85,8 @@ export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 3. `signAndEditExecutable: false` in electron-builder.json avoids Windows symlink issues
 4. Menu bar removed via `Menu.setApplicationMenu(null)`
 5. DevTools disabled by default (open with Ctrl+Shift+I)
+6. Projects and User Stories have `sortOrder` field for custom ordering (DB v3)
+7. Reordering sidebars uses @dnd-kit with `useSortable()` hook
+8. Moving user story to new project: change `projectId` in update, `sortOrder` auto-set to max+1
+9. Moving task: change `userStoryId` in update via TaskDialog dropdown
+10. Version displayed in Settings dialog (matches package.json)
